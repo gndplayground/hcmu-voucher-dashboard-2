@@ -1,23 +1,12 @@
 import React, { Suspense } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
 import { Box, Spinner } from "@chakra-ui/react";
-
+import { useAuthWatcher } from "@hooks";
 import AppProvider from "./providers/AppProviders";
-
-const LoginLazy = React.lazy(() =>
-  import("./pages/Login").then((module) => ({
-    default: module.Login,
-  }))
-);
-
-const router = createBrowserRouter([
-  {
-    path: "/login",
-    element: <LoginLazy />,
-  },
-]);
+import { router } from "./routes";
 
 function App() {
+  const { isValidating } = useAuthWatcher();
   return (
     <AppProvider>
       <Suspense
@@ -34,7 +23,7 @@ function App() {
           </Box>
         }
       >
-        <RouterProvider router={router} />
+        {!isValidating && <RouterProvider router={router} />}
       </Suspense>
     </AppProvider>
   );
