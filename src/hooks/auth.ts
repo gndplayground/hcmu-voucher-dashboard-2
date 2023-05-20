@@ -45,6 +45,30 @@ export function useAuthLogin() {
   );
 }
 
+export function useAuthSignOut() {
+  const authStore = useAuthStore();
+  const { toast } = useToast();
+  return useMutation(
+    async () => {
+      await axiosInstance.post<{
+        data: { token: string; user: User };
+      }>(`${config.API_ENDPOINT}/auth/logout`);
+
+      authStore.set((state) => {
+        state.user = undefined;
+      });
+      localStorage.removeItem("app-user");
+    },
+    {
+      onError(error) {
+        toast({
+          error,
+        });
+      },
+    }
+  );
+}
+
 export function useAuthWatcher() {
   const { user, isValidating } = useAuthStore((state) => {
     return {
