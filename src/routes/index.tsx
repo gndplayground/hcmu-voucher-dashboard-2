@@ -1,4 +1,4 @@
-import { SectionLoading } from "@components";
+import { GuardRoute, SectionLoading } from "@components";
 import React, { Suspense } from "react";
 import { createHashRouter } from "react-router-dom";
 
@@ -20,6 +20,16 @@ const CampaignLazy = React.lazy(() =>
   }))
 );
 
+const CampaignAddLazy = React.lazy(() =>
+  import("../pages/Campaigns").then((module) => ({
+    default: module.CampaignsAdd,
+  }))
+);
+
+function SupportSuspense(props: { children: React.ReactNode }) {
+  return <Suspense fallback={<SectionLoading />}>{props.children}</Suspense>;
+}
+
 export const router = createHashRouter([
   {
     path: "/login",
@@ -32,9 +42,19 @@ export const router = createHashRouter([
       {
         path: "campaigns",
         element: (
-          <Suspense fallback={<SectionLoading />}>
-            <CampaignLazy />
-          </Suspense>
+          <SupportSuspense>
+            <GuardRoute>
+              {({ companyId }) => <CampaignLazy companyId={companyId} />}
+            </GuardRoute>
+          </SupportSuspense>
+        ),
+      },
+      {
+        path: "campaigns/add",
+        element: (
+          <SupportSuspense>
+            <GuardRoute>{() => <CampaignAddLazy />}</GuardRoute>
+          </SupportSuspense>
         ),
       },
     ],

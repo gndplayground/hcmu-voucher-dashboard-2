@@ -1,7 +1,7 @@
 import { config } from "@configs";
 import { useAuthStore } from "@stores/auth";
 import { useMutation } from "@tanstack/react-query";
-import { User } from "@types";
+import { User, UserProfile } from "@types";
 import { axiosInstance } from "@utils/fetch";
 import { AxiosError } from "axios";
 import React from "react";
@@ -15,16 +15,24 @@ export function useAuthLogin() {
     async (body: { email: string; password: string }) => {
       const { email, password } = body;
       const { data } = await axiosInstance.post<{
-        data: { token: string; user: User };
+        data: { token: string; user: User; profile?: UserProfile };
       }>(`${config.API_ENDPOINT}/auth/login`, {
         email,
         password,
       });
 
+      if (!data.data.profile || !data.data.profile.companyId) {
+        throw new Error("User does not have a company");
+      }
+
       authStore.set((state) => {
         state.user = data.data.user;
       });
       localStorage.setItem("app-user", JSON.stringify(data.data.user));
+      localStorage.setItem(
+        "app-user-profile",
+        JSON.stringify(data.data.profile)
+      );
     },
     {
       onError(error) {
@@ -56,8 +64,10 @@ export function useAuthSignOut() {
 
       authStore.set((state) => {
         state.user = undefined;
+        state.profile = undefined;
       });
       localStorage.removeItem("app-user");
+      localStorage.removeItem("app-user-profile");
     },
     {
       onError(error) {
@@ -82,7 +92,8 @@ export function useAuthWatcher() {
     if (isValidating) return;
 
     if (user) {
-      router.navigate("/");
+      // router.navigate("/");
+      router.navigate("/campaigns/add");
     } else {
       router.navigate("/login");
     }
@@ -93,8 +104,15 @@ export function useAuthWatcher() {
     if (user) {
       try {
         const parsedUser = JSON.parse(user);
+        const parsedProfile = JSON.parse(
+          localStorage.getItem("app-user-profile") || ""
+        );
+        if (!parsedProfile.companyId) {
+          throw new Error("User does not have a company");
+        }
         setAuthStore((state) => {
           state.user = parsedUser;
+          state.profile = parsedProfile;
         });
       } catch (error) {
         // eslint-disable-next-line no-console

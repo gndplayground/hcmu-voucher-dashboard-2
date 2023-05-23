@@ -5,33 +5,33 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
-  InputProps,
+  Select,
+  SelectProps,
   Textarea,
-  TextareaProps,
 } from "@chakra-ui/react";
 import React from "react";
 import { FieldErrors } from "react-hook-form";
 
-export interface FormInputProps extends BoxProps {
+export interface FormSelectProps extends BoxProps {
   id: string;
   errors?: FieldErrors;
   label?: React.ReactNode;
-  inputProps?: InputProps | TextareaProps;
+  selectProps?: SelectProps;
   disabled?: boolean;
   isRequired?: boolean;
-  isMutliline?: boolean;
+  children?: React.ReactNode;
   error?: string;
 }
 
-export function FormInput(props: FormInputProps) {
+export function FormSelect(props: FormSelectProps) {
   const {
     errors,
     label,
     disabled,
     id,
-    inputProps,
+    selectProps,
     isRequired,
-    isMutliline,
+    children,
     error,
     ...others
   } = props;
@@ -48,8 +48,9 @@ export function FormInput(props: FormInputProps) {
           {isRequired && <Box color="red.500">*</Box>}
         </FormLabel>
       )}
-      {!isMutliline && <Input id={id} {...(inputProps as any)} />}
-      {isMutliline && <Textarea id={id} {...(inputProps as any)} />}
+      <Select id={id} {...(selectProps as any)}>
+        {children}
+      </Select>
       {(errors?.[id]?.message || !!error) && (
         <FormErrorMessage>
           {(errors?.[id]?.message as string) || error}

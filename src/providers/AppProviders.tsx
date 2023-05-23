@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CSSReset } from "@chakra-ui/css-reset";
 import { ChakraProvider } from "@chakra-ui/react";
 
+import { CalendarDefaultTheme } from "@uselessdev/datepicker";
 import { theme } from "../theme";
 
 export interface AppProviderProps {
@@ -25,7 +26,10 @@ function AppProvider(props: AppProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <ChakraProvider
-        theme={theme}
+        theme={{
+          ...theme,
+          ...CalendarDefaultTheme,
+        }}
         toastOptions={{
           defaultOptions: {
             position: "top-right",
