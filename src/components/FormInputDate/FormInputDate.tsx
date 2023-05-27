@@ -5,19 +5,15 @@ import {
   FormErrorMessage,
   FormLabel,
   Input,
-  InputProps,
   Popover,
   PopoverBody,
   PopoverContent,
   PopoverTrigger,
-  Textarea,
-  TextareaProps,
   useDisclosure,
   useOutsideClick,
 } from "@chakra-ui/react";
 import {
   Calendar,
-  CalendarDefaultTheme,
   CalendarControls,
   CalendarPrevButton,
   CalendarNextButton,
@@ -41,6 +37,7 @@ export interface FormInputDateProps extends BoxProps {
   isRequired?: boolean;
   onDateChange?: (date: Date) => void;
   error?: string;
+  defaultDate?: Date;
 }
 
 export function FormInputDate(props: FormInputDateProps) {
@@ -64,6 +61,7 @@ export function FormInputDate(props: FormInputDateProps) {
     isRequired,
     onDateChange,
     error,
+    defaultDate,
     ...others
   } = props;
 
@@ -82,6 +80,13 @@ export function FormInputDate(props: FormInputDateProps) {
       return setDate(date);
     }
   }, [value]);
+
+  React.useEffect(() => {
+    if (!date && defaultDate && isValid(defaultDate)) {
+      setDate(defaultDate);
+      setValue(() => format(defaultDate, "MM/dd/yyyy"));
+    }
+  }, [date, defaultDate]);
 
   const handleInputChange = ({
     target,

@@ -3,6 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Campaign,
   CampaignCreateData,
+  CampaignEditData,
   CampaignProgressEnum,
   CampaignUpdateData,
 } from "@types";
@@ -11,6 +12,21 @@ import { axiosInstance } from "@utils/fetch";
 import queryString from "query-string";
 import { appendFormData } from "@utils/form";
 import { useToast } from "./useToast";
+
+export function useGetCampaign(id: number | undefined) {
+  return useQuery(
+    ["campaign", id],
+    async () => {
+      const result = await axiosInstance.get<APIResponse<Campaign>>(
+        `${config.API_ENDPOINT}/campaigns/${id}`
+      );
+      return result.data.data;
+    },
+    {
+      enabled: !!id,
+    }
+  );
+}
 
 export function useGetListCampaigns(
   options: {
@@ -89,6 +105,39 @@ export function useUpdateCampaign(
         }
       );
       return result.data.data;
+    },
+    {
+      onSuccess() {
+        if (!skipToastSuccess) {
+          toast({
+            title: "Success",
+            description: "Campaign updated successfully",
+            status: "success",
+          });
+        }
+      },
+      onError(error) {
+        toast({
+          error,
+        });
+      },
+    }
+  );
+}
+
+export function useUpdateFullCampaign(
+  options: { skipToastSuccess?: boolean } = {}
+) {
+  const { toast } = useToast();
+  const { skipToastSuccess = false } = options;
+  return useMutation(
+    async (all: { id: number; data: CampaignEditData }) => {
+      const { id, data } = all;
+
+      await axiosInstance.patch(
+        `${config.API_ENDPOINT}/campaigns/${id}/full`,
+        data
+      );
     },
     {
       onSuccess() {

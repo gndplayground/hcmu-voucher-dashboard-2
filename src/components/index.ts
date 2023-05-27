@@ -5,3 +5,4 @@ export * from "./GuardRoute";
 export * from "./HasNextPagination";
 export * from "./FormSelect";
 export * from "./FormInputDate";
+export * from "./ConfirmModal";

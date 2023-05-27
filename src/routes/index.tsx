@@ -26,6 +26,12 @@ const CampaignAddLazy = React.lazy(() =>
   }))
 );
 
+const CampaignEditLazy = React.lazy(() =>
+  import("../pages/Campaigns").then((module) => ({
+    default: module.CampaignsEdit,
+  }))
+);
+
 function SupportSuspense(props: { children: React.ReactNode }) {
   return <Suspense fallback={<SectionLoading />}>{props.children}</Suspense>;
 }
@@ -54,6 +60,14 @@ export const router = createHashRouter([
         element: (
           <SupportSuspense>
             <GuardRoute>{() => <CampaignAddLazy />}</GuardRoute>
+          </SupportSuspense>
+        ),
+      },
+      {
+        path: "campaigns/:id",
+        element: (
+          <SupportSuspense>
+            <GuardRoute>{() => <CampaignEditLazy />}</GuardRoute>
           </SupportSuspense>
         ),
       },

@@ -92,8 +92,8 @@ export function useAuthWatcher() {
     if (isValidating) return;
 
     if (user) {
-      // router.navigate("/");
-      router.navigate("/campaigns/add");
+      //router.navigate("/");
+      router.navigate("/campaigns");
     } else {
       router.navigate("/login");
     }

@@ -1,5 +1,14 @@
-import { VoucherClaimTypeEnum, VoucherDiscountCreateData } from "./voucher";
-import { VoucherQuestion, VoucherQuestionCreateData } from "./voucherQuestion";
+import {
+  VoucherClaimTypeEnum,
+  VoucherDiscount,
+  VoucherDiscountCreateData,
+  VoucherDiscountEditData,
+} from "./voucher";
+import {
+  VoucherQuestion,
+  VoucherQuestionCreateData,
+  VoucherQuestionEditData,
+} from "./voucherQuestion";
 
 export enum CampaignProgressEnum {
   UPCOMING = "upcoming",
@@ -20,6 +29,8 @@ export interface Campaign {
   createdAt: string;
   createdBy: number;
   companyId: number;
+  voucherDiscounts: VoucherDiscount[];
+  voucherQuestions?: VoucherQuestion[];
 }
 
 export interface CampaignCreateData {
@@ -30,6 +41,16 @@ export interface CampaignCreateData {
   claimType?: VoucherClaimTypeEnum;
   questions: VoucherQuestionCreateData[];
   voucherDiscounts: VoucherDiscountCreateData[];
+}
+
+export interface CampaignEditData {
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  claimType?: VoucherClaimTypeEnum | null;
+  questions: VoucherQuestionEditData[];
+  voucherDiscounts: VoucherDiscountEditData[];
 }
 
 export type CampaignUpdateData = Partial<

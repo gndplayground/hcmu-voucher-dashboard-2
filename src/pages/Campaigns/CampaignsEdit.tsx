@@ -1,3 +1,25 @@
+import { yupResolver } from "@hookform/resolvers/yup";
+import {
+  useGetCampaign,
+  useUpdateCampaign,
+  useUpdateFullCampaign,
+} from "@hooks/campaigns";
+import {
+  CampaignCreateData,
+  CampaignEditData,
+  VoucherClaimTypeEnum,
+  VoucherCodeTypeEnum,
+  VoucherDiscountCreateData,
+  VoucherDiscountTypeEnum,
+  VoucherQuestion,
+  VoucherQuestionEditData,
+  VoucherQuestionTypeEnum,
+} from "@types";
+import isAfter from "date-fns/isAfter";
+import React from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
+import * as Yup from "yup";
 import {
   Accordion,
   AccordionButton,
@@ -12,34 +34,17 @@ import {
   FormLabel,
   Heading,
   IconButton,
-  Input,
   Stack,
   Switch,
 } from "@chakra-ui/react";
-import { isAfter } from "date-fns";
-import { FormInputDate, FormSelect } from "@components";
-import { FormInput } from "@components";
-import { yupResolver } from "@hookform/resolvers/yup";
-
-import {
-  CampaignCreateData,
-  VoucherClaimTypeEnum,
-  VoucherCodeTypeEnum,
-  VoucherDiscountCreateData,
-  VoucherDiscountTypeEnum,
-  VoucherQuestionTypeEnum,
-} from "@types";
-import * as Yup from "yup";
-import React from "react";
-import { useFieldArray, useForm } from "react-hook-form";
-import { FiAlertCircle, FiArrowLeft, FiTrash } from "react-icons/fi";
-import { useCreateCampaign, useUpdateCampaign } from "@hooks/campaigns";
-import { useNavigate } from "react-router-dom";
+import { FormInput, FormInputDate, FormSelect } from "@components";
+import { FiArrowLeft, FiAlertCircle, FiTrash } from "react-icons/fi";
 import { QuestionsModal } from "./components/Questions";
 import { ReviewQuestions } from "./components/ReviewQuestions";
+import { UploadBanner } from "./components/UploadBanner";
 
-export interface CampaignsAddProps {
-  companyId: number;
+export interface CampaignsEditProps {
+  id?: number;
 }
 
 const validationSchema = Yup.object<CampaignCreateData>().shape({
@@ -71,6 +76,7 @@ const validationSchema = Yup.object<CampaignCreateData>().shape({
     ),
   claimType: Yup.string().optional().nullable(),
   questions: Yup.array()
+
     .when("claimType", {
       is: (claimType: string) => claimType === VoucherClaimTypeEnum.QUESTIONS,
       then: (schema) =>
@@ -201,88 +207,41 @@ const validationSchema = Yup.object<CampaignCreateData>().shape({
     })
   ),
 });
+
 const resolver = yupResolver(validationSchema);
 
-interface UploadButtonProps {
-  onChange: (file: File | null) => void;
-  file?: File | null;
-}
-
-function UploadButton(props: UploadButtonProps) {
-  const { onChange, file } = props;
-  const [image, setImage] = React.useState<string | null>(null);
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const selectedFile = event.target.files?.[0];
-    onChange(selectedFile || null);
-  }
-
-  React.useEffect(() => {
-    if (!file) {
-      setImage(null);
-    } else {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  }, [file]);
-
+function mapVoucherQuestions(
+  voucherQuestions: VoucherQuestion[] | undefined
+): VoucherQuestionEditData[] {
   return (
-    <Box>
-      {!image && <Box w="200px" height="200px" border="1px dashed" />}
-      {image && (
-        <Box w="200px" height="200px" border="1px dashed">
-          <Box
-            as="img"
-            src={image}
-            alt="Preview"
-            w="100%"
-            height="100%"
-            objectFit="cover"
-          />
-        </Box>
-      )}
-      <Input
-        ref={inputRef}
-        type="file"
-        onChange={handleFileChange}
-        display="none"
-        accept="image/jpeg"
-      />
-      <Box mt={4} display="flex" alignItems="center">
-        <Button onClick={() => inputRef.current?.click()}>Upload banner</Button>
-        {file && (
-          <IconButton
-            ml={4}
-            aria-label="Delete image"
-            colorScheme="red"
-            onClick={() => {
-              onChange(null);
-            }}
-          >
-            <FiTrash />
-          </IconButton>
-        )}
-      </Box>
-    </Box>
+    voucherQuestions?.map((q) => {
+      return {
+        id: q.id,
+        question: q.question,
+        type: q.type,
+        choices:
+          q.voucherQuestionChoices?.map((c) => {
+            return {
+              id: c.id,
+              choice: c.choice,
+              isCorrect: c.isCorrect,
+            };
+          }) || [],
+      };
+    }) || []
   );
 }
 
-export function CampaignsAdd() {
+export function CampaignsEdit() {
+  const { id } = useParams();
   const navigate = useNavigate();
+  const campaign = useGetCampaign(id ? Number(id) : undefined);
 
   const [file, setFile] = React.useState<File | null | undefined>(null);
+  const [removeDefaultImage, setIsRemoveDefaultImage] =
+    React.useState<boolean>(false);
 
   const [allClaimType, setAllClaimType] = React.useState<boolean>(false);
-
-  const createCamp = useCreateCampaign();
-
-  const updateCamp = useUpdateCampaign({
-    skipToastSuccess: true,
-  });
 
   function handleCheckChangeAllClaimType(
     event: React.ChangeEvent<HTMLInputElement>
@@ -290,7 +249,137 @@ export function CampaignsAdd() {
     setAllClaimType(event.target.checked);
   }
 
-  const form = useForm<CampaignCreateData>({
+  const updateCampFull = useUpdateFullCampaign();
+  const updateCamp = useUpdateCampaign({
+    skipToastSuccess: true,
+  });
+
+  function getVCQ(
+    voucherQuestions: VoucherQuestion[] | undefined,
+    voucherQuestionsEdit: VoucherQuestionEditData[] | undefined,
+    claimType: VoucherClaimTypeEnum | undefined | null
+  ) {
+    const vq: { id: number; isDeleted: true }[] = [];
+    const vc: Record<number, { id: number; isDeleted: true }> = {};
+
+    voucherQuestions?.forEach((q) => {
+      if (claimType && claimType !== VoucherClaimTypeEnum.QUESTIONS) {
+        vq.push({
+          id: q.id,
+          isDeleted: true,
+        });
+        return;
+      }
+
+      if (voucherQuestionsEdit?.find((vq) => vq.id === q.id) === undefined) {
+        vq.push({
+          id: q.id,
+          isDeleted: true,
+        });
+      } else {
+        q.voucherQuestionChoices?.forEach((c) => {
+          if (
+            voucherQuestionsEdit
+              ?.find((vq) => vq.id === q.id)
+              ?.choices?.find((vc) => vc.id === c.id) === undefined
+          ) {
+            vc[q.id] = {
+              id: c.id,
+              isDeleted: true,
+            };
+          }
+        });
+      }
+    });
+
+    return { vq, vc };
+  }
+
+  async function onSubmit(formData: CampaignEditData) {
+    try {
+      const values = structuredClone(formData);
+
+      const { vc, vq } = getVCQ(
+        campaign.data?.voucherQuestions,
+        values.questions,
+        values.claimType || undefined
+      );
+
+      if (!allClaimType) {
+        values.claimType = null;
+      }
+
+      values.questions = values.questions?.concat(vq).map((q) => {
+        if (q.id && vc[q.id]) {
+          q.choices = q.choices?.concat(vc[q.id]);
+        }
+        return q;
+      });
+
+      campaign.data?.voucherDiscounts?.forEach((vd) => {
+        if (
+          !values.voucherDiscounts?.find((v) => {
+            return v.id === vd.id;
+          })
+        ) {
+          values.voucherDiscounts = values.voucherDiscounts?.concat({
+            id: vd.id,
+            isDeleted: true,
+          });
+        }
+      });
+
+      values.voucherDiscounts.forEach((vd, index) => {
+        const v = getVCQ(
+          campaign.data?.voucherDiscounts?.[index].voucherQuestions,
+          values.voucherDiscounts?.[index]?.questions,
+          vd.claimType
+        );
+
+        values.voucherDiscounts.forEach((_, index) => {
+          values.voucherDiscounts[index].questions = values.voucherDiscounts
+            ?.map((d) => {
+              if (!allClaimType) {
+                d.claimType = null;
+              }
+              return d;
+            })
+            ?.[index].questions?.concat(v.vq)
+            .map((q) => {
+              // console.log(q, v.vc);
+              if (q.id && v.vc[q.id]) {
+                q.choices = q.choices?.concat(v.vc[q.id]);
+              }
+              return q;
+            });
+        });
+      });
+
+      await updateCampFull.mutateAsync({
+        id: Number(id),
+        data: values,
+      });
+
+      if (file || removeDefaultImage) {
+        await updateCamp.mutateAsync({
+          id: Number(id),
+          data: {
+            logo: file || undefined,
+            shouldDeletePhoto: removeDefaultImage,
+          },
+        });
+      }
+      navigate({
+        pathname: `/campaigns`,
+      });
+      await campaign.refetch();
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.log(err);
+    }
+  }
+
+  const form = useForm<CampaignEditData>({
     defaultValues: { questions: [] },
     resolver,
   });
@@ -304,7 +393,39 @@ export function CampaignsAdd() {
     watch,
   } = form;
 
-  const fieldVoucherDiscounts = useFieldArray<CampaignCreateData>({
+  React.useEffect(() => {
+    if (campaign.isFetchedAfterMount && campaign.data) {
+      const data = campaign.data;
+      if (data.claimType) {
+        setAllClaimType(true);
+      }
+      form.reset({
+        name: data.name,
+        description: data.description || "",
+        startDate: new Date(data.startDate),
+        endDate: new Date(data.endDate),
+        claimType: data.claimType || undefined,
+        questions: mapVoucherQuestions(data.voucherQuestions),
+        voucherDiscounts:
+          data.voucherDiscounts?.map((d) => {
+            return {
+              id: d.id,
+              claimMode: d.claimMode,
+              claimType: d.claimType,
+              code: d.code,
+              codeType: d.codeType,
+              description: d.description,
+              discount: d.discount,
+              total: d.total,
+              type: d.type,
+              questions: mapVoucherQuestions(d.voucherQuestions),
+            };
+          }) || [],
+      });
+    }
+  }, [campaign.data, campaign.isFetchedAfterMount, form]);
+
+  const fieldVoucherDiscounts = useFieldArray<CampaignEditData>({
     control,
     name: "voucherDiscounts",
   });
@@ -316,29 +437,14 @@ export function CampaignsAdd() {
   const watchClaimType = watch("claimType");
   const watchVoucherDiscounts = watch("voucherDiscounts");
   const watchQuestions = watch("questions");
-
-  async function onSubmit(values: CampaignCreateData) {
-    const camp = await createCamp.mutateAsync({
-      ...values,
-      questions: !allClaimType ? [] : values.questions,
-    });
-
-    if (file) {
-      updateCamp.mutateAsync({
-        id: camp.id,
-        data: { logo: file || undefined },
-      });
-    }
-    navigate({
-      pathname: `/campaigns`,
-    });
-  }
+  const watchStartDate = watch("startDate");
+  const watchEndDate = watch("endDate");
 
   return (
     <Card px={8} py={4}>
       {(openQuestion === 0 || !!openQuestion) && (
         <QuestionsModal
-          form={form}
+          form={form as any}
           indexVoucherDiscount={
             typeof openQuestion === "number" ? openQuestion : undefined
           }
@@ -362,17 +468,21 @@ export function CampaignsAdd() {
           <FiArrowLeft />
         </IconButton>
         <Heading as="h1" size="xl" ml={4}>
-          Add new campaign
+          Edit campaign {campaign.data?.name && `: ${campaign.data?.name}`}
         </Heading>
       </Box>
 
       <Box as="form" mt={4} onSubmit={handleSubmit(onSubmit)}>
         <Box display="flex">
           <Box minW={250}>
-            <UploadButton
+            <UploadBanner
               file={file}
               onChange={(file) => {
                 setFile(file);
+              }}
+              defaultImage={removeDefaultImage ? null : campaign.data?.logo}
+              onRemoveDefaultImage={() => {
+                setIsRemoveDefaultImage(true);
               }}
             />
           </Box>
@@ -408,6 +518,7 @@ export function CampaignsAdd() {
                 label="Start date"
                 id="startDate"
                 errors={errors}
+                defaultDate={watchStartDate}
               />
               <FormInputDate
                 isRequired={true}
@@ -417,6 +528,7 @@ export function CampaignsAdd() {
                 onDateChange={(date) => {
                   setValue("endDate", date);
                 }}
+                defaultDate={watchEndDate}
               />
               <Divider />
               <Box>
@@ -426,6 +538,7 @@ export function CampaignsAdd() {
                   </FormLabel>
                   <Switch
                     id="all-claims-type"
+                    isChecked={allClaimType}
                     onChange={handleCheckChangeAllClaimType}
                   />
                 </FormControl>
@@ -739,7 +852,7 @@ export function CampaignsAdd() {
             colorScheme="blue"
             variant="solid"
           >
-            Add campaign
+            Edit campaign
           </Button>
         </Box>
       </Box>

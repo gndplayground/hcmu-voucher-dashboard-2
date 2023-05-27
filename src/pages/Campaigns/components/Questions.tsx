@@ -26,10 +26,19 @@ export interface QuestionsModalProps {
   onClose: () => void;
   form: UseFormReturn<CampaignCreateData>;
   indexVoucherDiscount?: number;
+  onRemoveQuestion?: (index: number) => void;
+  onRemoveChoice?: (questionIndex: number, choiceIndex: number) => void;
 }
 
 export function QuestionsModal(props: QuestionsModalProps) {
-  const { isOpen, onClose, form, indexVoucherDiscount } = props;
+  const {
+    isOpen,
+    onClose,
+    form,
+    indexVoucherDiscount,
+    onRemoveChoice,
+    onRemoveQuestion,
+  } = props;
 
   const {
     control,
@@ -55,8 +64,6 @@ export function QuestionsModal(props: QuestionsModalProps) {
         : "questions"
     ) || [];
 
-  console.log(watchQuestions, "fields");
-
   const handleAddQuestion = () => {
     append({
       question: "",
@@ -77,7 +84,6 @@ export function QuestionsModal(props: QuestionsModalProps) {
       isCorrect: false,
     });
     const updatedQuestion = { ...question, choices };
-    console.log(question, updatedQuestion);
     update(questionIndex, updatedQuestion);
   };
 
@@ -103,10 +109,17 @@ export function QuestionsModal(props: QuestionsModalProps) {
           <Divider mt={4} />
           {fields.map((question, questionIndex) => {
             const questionType = question as VoucherQuestionCreateData;
+            const errorBase =
+              indexVoucherDiscount !== undefined
+                ? errors.voucherDiscounts?.[indexVoucherDiscount]?.questions?.[
+                    questionIndex
+                  ]
+                : errors?.questions?.[questionIndex];
             return (
               <Box mt={4} key={question.id}>
                 <Box display="flex">
                   <FormInput
+                    isRequired
                     id={`${baseName}.[${questionIndex}].question`}
                     label={`Question ${questionIndex + 1}`}
                     inputProps={{
@@ -115,10 +128,7 @@ export function QuestionsModal(props: QuestionsModalProps) {
                       defaultValue: questionType.question,
                       ...register(`${baseName}.${questionIndex}.question`),
                     }}
-                    error={
-                      (errors?.questions?.[questionIndex] as any)?.question
-                        ?.message
-                    }
+                    error={errorBase?.question?.message}
                   />
                   <IconButton
                     mt={8}
@@ -127,6 +137,7 @@ export function QuestionsModal(props: QuestionsModalProps) {
                     aria-label={`Delete question ${questionIndex + 1}`}
                     onClick={() => {
                       remove(questionIndex);
+                      onRemoveQuestion?.(questionIndex);
                     }}
                   >
                     <FiTrash />
@@ -168,6 +179,11 @@ export function QuestionsModal(props: QuestionsModalProps) {
                         </Button>
                       </Box>
                       <Divider mt={4} />
+                      {errorBase && errorBase.choices?.message && (
+                        <Box mt={4} pl={8} color="red.500">
+                          {errorBase.choices?.message}
+                        </Box>
+                      )}
                       <Stack spacing={4} mt={4} pl={8}>
                         {questionType.choices?.map((choice, choiceIndex) => {
                           return (
@@ -183,12 +199,8 @@ export function QuestionsModal(props: QuestionsModalProps) {
                                       id={`${baseName}.${questionIndex}.choices.${choiceIndex}.choice`}
                                       inputProps={{ ...field }}
                                       error={
-                                        (
-                                          errors?.questions?.[
-                                            questionIndex
-                                          ] as any
-                                        )?.choices?.[choiceIndex]?.choice
-                                          ?.message
+                                        errorBase?.choices?.[choiceIndex]
+                                          ?.choice?.message
                                       }
                                     />
                                   </>
@@ -204,6 +216,10 @@ export function QuestionsModal(props: QuestionsModalProps) {
                                   }`}
                                   onClick={() => {
                                     handleRemoveChoice(
+                                      questionIndex,
+                                      choiceIndex
+                                    );
+                                    onRemoveChoice?.(
                                       questionIndex,
                                       choiceIndex
                                     );

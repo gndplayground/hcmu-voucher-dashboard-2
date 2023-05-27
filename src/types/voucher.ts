@@ -1,4 +1,8 @@
-import { VoucherQuestionCreateData } from "./voucherQuestion";
+import {
+  VoucherQuestion,
+  VoucherQuestionCreateData,
+  VoucherQuestionEditData,
+} from "./voucherQuestion";
 
 export enum VoucherDiscountTypeEnum {
   PERCENTAGE = "PERCENTAGE",
@@ -27,15 +31,16 @@ export interface VoucherTicket {
 export interface VoucherDiscount {
   id: number;
   campaignId: number;
-  description: string | null;
+  description?: string;
   type: VoucherDiscountTypeEnum;
-  claimType: VoucherClaimTypeEnum | null;
-  claimMode: number | null;
-  code: string | null;
+  claimType?: VoucherClaimTypeEnum;
+  claimMode?: number;
+  code?: string;
   codeType: VoucherCodeTypeEnum;
   discount: number;
   total: number;
   createdAt: Date;
+  voucherQuestions?: VoucherQuestion[];
 }
 
 export interface VoucherDiscountCreateData {
@@ -48,4 +53,18 @@ export interface VoucherDiscountCreateData {
   discount: number;
   total: number;
   questions?: VoucherQuestionCreateData[];
+}
+
+export interface VoucherDiscountEditData {
+  id?: number;
+  description?: string | null;
+  type?: VoucherDiscountTypeEnum;
+  claimType?: VoucherClaimTypeEnum | null;
+  claimMode?: number;
+  code?: string;
+  codeType?: VoucherCodeTypeEnum;
+  discount?: number;
+  total?: number;
+  questions?: VoucherQuestionEditData[];
+  isDeleted?: boolean;
 }

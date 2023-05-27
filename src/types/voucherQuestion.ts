@@ -8,13 +8,19 @@ export interface VoucherQuestionChoice {
   id: number;
   questionId: number;
   choice: string;
-  isCorrect: boolean | null;
-  isDeleted: boolean | null;
+  isCorrect?: boolean;
+  isDeleted?: boolean;
   createdAt: Date;
 }
 
 export interface VoucherQuestionChoiceCreateData {
   choice: string;
+  isCorrect?: boolean;
+}
+
+export interface VoucherQuestionChoiceEditData {
+  id?: number;
+  choice?: string;
   isCorrect?: boolean;
 }
 
@@ -26,10 +32,19 @@ export interface VoucherQuestion {
   campaignId: number | null;
   discountId: number | null;
   isDeleted: boolean | null;
+  voucherQuestionChoices?: VoucherQuestionChoice[];
 }
 
 export interface VoucherQuestionCreateData {
   question: string;
   type: VoucherQuestionTypeEnum;
   choices?: VoucherQuestionChoiceCreateData[];
+}
+
+export interface VoucherQuestionEditData {
+  id?: number;
+  question?: string;
+  type?: VoucherQuestionTypeEnum;
+  choices?: VoucherQuestionChoiceEditData[];
+  isDeleted?: boolean | null;
 }

@@ -1,4 +1,8 @@
-import { VoucherQuestionCreateData, VoucherQuestionTypeEnum } from "@types";
+import {
+  VoucherQuestionCreateData,
+  VoucherQuestionEditData,
+  VoucherQuestionTypeEnum,
+} from "@types";
 import React from "react";
 import {
   Accordion,
@@ -10,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 
 export interface ReviewQuestionsProps {
-  questions?: VoucherQuestionCreateData[];
+  questions?: (VoucherQuestionCreateData | VoucherQuestionEditData)[];
 }
 
 export function ReviewQuestions(props: ReviewQuestionsProps) {
