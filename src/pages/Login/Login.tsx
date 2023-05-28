@@ -12,6 +12,7 @@ import { IsEmail, IsNotEmpty } from "class-validator";
 import { getClassValidatorResolver } from "@utils/form";
 import { FormInput } from "@components";
 import { useAuthLogin } from "@hooks";
+import { useLocation, useNavigate } from "react-router-dom";
 
 class LoginDto {
   @IsEmail()
@@ -34,11 +35,26 @@ export function Login() {
     resolver,
   });
 
-  function onSubmit(values: Record<string, any>) {
-    authLogin.mutate({
-      email: values.email,
-      password: values.password,
-    });
+  const location = useLocation();
+
+  const navigate = useNavigate();
+
+  async function onSubmit(values: Record<string, any>) {
+    try {
+      await authLogin.mutateAsync({
+        email: values.email,
+        password: values.password,
+      });
+
+      navigate(
+        !!location?.state?.prev && !location.state.prev.includes("/login")
+          ? location.state.prev
+          : "/"
+      );
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(error);
+    }
   }
 
   return (

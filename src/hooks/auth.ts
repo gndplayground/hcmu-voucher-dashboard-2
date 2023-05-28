@@ -92,7 +92,11 @@ export function useAuthWatcher() {
     if (isValidating) return;
 
     if (!user) {
-      router.navigate("/login");
+      router.navigate("/login", {
+        state: {
+          prev: router.state.location.pathname + router.state.location.search,
+        },
+      });
     }
   }, [isValidating, user]);
 
@@ -111,6 +115,7 @@ export function useAuthWatcher() {
           state.user = parsedUser;
           state.profile = parsedProfile;
         });
+        router.navigate("/");
       } catch (error) {
         // eslint-disable-next-line no-console
         console.log("Failed parse user from localStorage");
