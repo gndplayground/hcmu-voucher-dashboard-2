@@ -36,6 +36,7 @@ export function Campaigns(props: CampaignsProps) {
     search,
   });
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleOnChange = React.useCallback(
     debounce((e: React.ChangeEvent<HTMLInputElement>) => {
       setSearch(e.target.value);
