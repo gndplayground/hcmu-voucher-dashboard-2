@@ -91,10 +91,7 @@ export function useAuthWatcher() {
   React.useEffect(() => {
     if (isValidating) return;
 
-    if (user) {
-      //router.navigate("/");
-      router.navigate("/campaigns");
-    } else {
+    if (!user) {
       router.navigate("/login");
     }
   }, [isValidating, user]);
@@ -122,6 +119,10 @@ export function useAuthWatcher() {
           state.isValidating = false;
         });
       }
+    } else {
+      setAuthStore((state) => {
+        state.isValidating = false;
+      });
     }
   }, [setAuthStore]);
 

@@ -66,6 +66,9 @@ axiosInstance.interceptors.response.use(
 
     // There are no request trying to get the refresh token
     if (!isRefreshing && !originalRequest._retry) {
+      authStore.set((state) => {
+        state.isValidating = true;
+      });
       originalRequest._retry = true;
 
       isRefreshing = true;
@@ -91,6 +94,11 @@ axiosInstance.interceptors.response.use(
           })
           .then(() => {
             isRefreshing = false;
+          })
+          .finally(() => {
+            authStore.set((state) => {
+              state.isValidating = false;
+            });
           });
       });
     }

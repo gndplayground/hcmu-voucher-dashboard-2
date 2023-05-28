@@ -53,16 +53,9 @@ const validationSchema = Yup.object<CampaignCreateData>().shape({
     .optional()
     .nullable()
     .max(255, "Description is too long"),
-  startDate: Yup.date()
-    .required("Start date is required")
-    .test("not-in-the-past", "Date must not be in the past", function (value) {
-      return !value || value >= new Date();
-    }),
+  startDate: Yup.date().required("Start date is required"),
   endDate: Yup.date()
     .required("End date is required")
-    .test("not-in-the-past", "Date must not be in the past", function (value) {
-      return !value || value >= new Date();
-    })
     .test(
       "test-endDate",
       "End date must be greater than start date",
@@ -329,24 +322,27 @@ export function CampaignsEdit() {
         }
       });
 
-      values.voucherDiscounts.forEach((vd, index) => {
+      values.voucherDiscounts?.forEach((vd, index) => {
         const v = getVCQ(
-          campaign.data?.voucherDiscounts?.[index].voucherQuestions,
+          campaign.data?.voucherDiscounts?.[index]?.voucherQuestions,
           values.voucherDiscounts?.[index]?.questions,
           vd.claimType
         );
 
-        values.voucherDiscounts.forEach((_, index) => {
+        values.voucherDiscounts?.forEach((_, index) => {
+          if (!values.voucherDiscounts[index]) {
+            return;
+          }
+
           values.voucherDiscounts[index].questions = values.voucherDiscounts
             ?.map((d) => {
-              if (!allClaimType) {
+              if (allClaimType) {
                 d.claimType = null;
               }
               return d;
             })
             ?.[index].questions?.concat(v.vq)
             .map((q) => {
-              // console.log(q, v.vc);
               if (q.id && v.vc[q.id]) {
                 q.choices = q.choices?.concat(v.vc[q.id]);
               }
@@ -600,7 +596,8 @@ export function CampaignsEdit() {
                   const fieldHasError = (errors as any)?.voucherDiscounts?.[
                     index
                   ];
-                  const currentVoucherDiscount = watchVoucherDiscounts[index];
+                  const currentVoucherDiscount =
+                    watchVoucherDiscounts[index] || undefined;
                   return (
                     <AccordionItem key={field.id}>
                       <Stack spacing={4}>
@@ -798,7 +795,7 @@ export function CampaignsEdit() {
                                 {VoucherCodeTypeEnum.MANUAL}
                               </option>
                             </FormSelect>
-                            {currentVoucherDiscount.codeType ===
+                            {currentVoucherDiscount?.codeType ===
                               VoucherCodeTypeEnum.MANUAL && (
                               <FormInput
                                 isRequired={true}
