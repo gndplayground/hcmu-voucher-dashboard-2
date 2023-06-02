@@ -47,7 +47,7 @@ const validationSchema = Yup.object<CampaignCreateData>().shape({
   description: Yup.string()
     .optional()
     .nullable()
-    .max(255, "Description is too long"),
+    .max(500, "Description is too long"),
   startDate: Yup.date()
     .required("Start date is required")
     .test("not-in-the-past", "Date must not be in the past", function (value) {

@@ -52,7 +52,7 @@ const validationSchema = Yup.object<CampaignCreateData>().shape({
   description: Yup.string()
     .optional()
     .nullable()
-    .max(255, "Description is too long"),
+    .max(500, "Description is too long"),
   startDate: Yup.date().required("Start date is required"),
   endDate: Yup.date()
     .required("End date is required")
