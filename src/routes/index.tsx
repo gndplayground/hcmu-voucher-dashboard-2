@@ -1,4 +1,5 @@
 import { GuardRoute, SectionLoading } from "@components";
+import { Dashboard } from "@pages/Home/Dashboard";
 import React, { Suspense } from "react";
 import { createHashRouter } from "react-router-dom";
 
@@ -32,6 +33,12 @@ const CampaignEditLazy = React.lazy(() =>
   }))
 );
 
+const CampanyProfileLazy = React.lazy(() =>
+  import("../pages/CompanyProfile").then((module) => ({
+    default: module.CompanyProfile,
+  }))
+);
+
 function SupportSuspense(props: { children: React.ReactNode }) {
   return <Suspense fallback={<SectionLoading />}>{props.children}</Suspense>;
 }
@@ -45,6 +52,14 @@ export const router = createHashRouter([
     path: "/",
     element: <HomeLazy />,
     children: [
+      {
+        path: "/",
+        element: (
+          <SupportSuspense>
+            <GuardRoute>{() => <Dashboard />}</GuardRoute>
+          </SupportSuspense>
+        ),
+      },
       {
         path: "campaigns",
         element: (
@@ -68,6 +83,14 @@ export const router = createHashRouter([
         element: (
           <SupportSuspense>
             <GuardRoute>{() => <CampaignEditLazy />}</GuardRoute>
+          </SupportSuspense>
+        ),
+      },
+      {
+        path: "company-profile",
+        element: (
+          <SupportSuspense>
+            <GuardRoute>{() => <CampanyProfileLazy />}</GuardRoute>
           </SupportSuspense>
         ),
       },

@@ -12,7 +12,7 @@ import {
   BoxProps,
   FlexProps,
 } from "@chakra-ui/react";
-import { FiHome, FiTrendingUp } from "react-icons/fi";
+import { FiHome, FiTrendingUp, FiArchive } from "react-icons/fi";
 import { IconType } from "react-icons";
 import { TopNav } from "@components";
 import { Outlet, NavLink } from "react-router-dom";
@@ -25,6 +25,7 @@ interface LinkItemProps {
 const LinkItems: Array<LinkItemProps> = [
   { name: "Home", icon: FiHome, to: "/" },
   { name: "Campaigns", icon: FiTrendingUp, to: "/campaigns" },
+  { name: "Company", icon: FiArchive, to: "/company-profile" },
 ];
 
 export function Home() {

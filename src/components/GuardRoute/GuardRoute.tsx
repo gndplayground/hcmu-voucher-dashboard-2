@@ -14,6 +14,9 @@ export interface GuardRouteProps {
 export function GuardRoute(props: GuardRouteProps) {
   const { children } = props;
   const authStore = useAuthStore();
+
+  if (authStore.isValidating && !authStore.user) return <></>;
+
   return !authStore.user ||
     !authStore.profile ||
     !authStore.profile.companyId ? (
