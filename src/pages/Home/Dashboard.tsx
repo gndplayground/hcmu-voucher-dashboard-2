@@ -1,7 +1,11 @@
 import { Box, Card, Heading, SimpleGrid, Text } from "@chakra-ui/react";
+import { useGetStats } from "@hooks/home";
+import { useAuthStore } from "@stores";
 import React from "react";
 
 export function Dashboard() {
+  const profile = useAuthStore((state) => state.profile);
+  const stats = useGetStats(profile?.id);
   return (
     <Box>
       <SimpleGrid columns={3} spacing={10}>
@@ -10,7 +14,7 @@ export function Dashboard() {
             Active campaigns
           </Heading>
           <Text textAlign="right" mt={4} fontSize="1.5rem" fontWeight="bold">
-            1
+            {stats.data?.activeCampaigns}
           </Text>
         </Card>
         <Card p={4}>
@@ -18,7 +22,7 @@ export function Dashboard() {
             Upcoming campaigns
           </Heading>
           <Text textAlign="right" mt={4} fontSize="1.5rem" fontWeight="bold">
-            1
+            {stats.data?.upcomingCampaigns}
           </Text>
         </Card>
         <Card p={4}>
@@ -26,7 +30,7 @@ export function Dashboard() {
             Expire campaigns
           </Heading>
           <Text textAlign="right" mt={4} fontSize="1.5rem" fontWeight="bold">
-            1
+            {stats.data?.pastCampaigns}
           </Text>
         </Card>
         <Card p={4}>
@@ -34,7 +38,7 @@ export function Dashboard() {
             Total vouchers claimed
           </Heading>
           <Text textAlign="right" mt={4} fontSize="1.5rem" fontWeight="bold">
-            1
+            {stats.data?.claimedVouchers}
           </Text>
         </Card>
       </SimpleGrid>
