@@ -27,6 +27,7 @@ export function useAuthLogin() {
 
       authStore.set((state) => {
         state.user = data.data.user;
+        state.profile = data.data.profile;
       });
       localStorage.setItem("app-user", JSON.stringify(data.data.user));
       localStorage.setItem(
