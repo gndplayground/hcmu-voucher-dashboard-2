@@ -6,6 +6,7 @@ import {
   CampaignEditData,
   CampaignProgressEnum,
   CampaignUpdateData,
+  VoucherQuestion,
 } from "@types";
 import { APIResponse } from "@types";
 import { axiosInstance } from "@utils/fetch";
@@ -154,6 +155,86 @@ export function useUpdateFullCampaign(
           error,
         });
       },
+    }
+  );
+}
+
+export function useGetCampaignStats(data: {
+  id: number | undefined;
+  start?: string;
+}) {
+  const { id, start } = data;
+  return useQuery(
+    ["campaign-stats", id, start],
+    async () => {
+      const query = queryString.stringify({
+        start,
+      });
+      const result = await axiosInstance.get<
+        APIResponse<{
+          claimedByWeek: Record<string, number>;
+          claimed: number;
+          unclaimed: number;
+        }>
+      >(`${config.API_ENDPOINT}/campaigns/${id}/stats?${query}`);
+      return result.data.data;
+    },
+    {
+      enabled: !!id && !!start,
+    }
+  );
+}
+
+export function useGetDiscountStats(data: {
+  campaignId: number | undefined;
+  id: number | undefined;
+  start?: string;
+}) {
+  const { id, start, campaignId } = data;
+  return useQuery(
+    ["discount-stats", id, campaignId, start],
+    async () => {
+      const query = queryString.stringify({
+        start,
+      });
+      const result = await axiosInstance.get<
+        APIResponse<{
+          claimedByWeek: Record<string, number>;
+          claimed: number;
+          unclaimed: number;
+          questions: VoucherQuestion[];
+        }>
+      >(
+        `${config.API_ENDPOINT}/campaigns/${campaignId}/discount/${id}/stats?${query}`
+      );
+      return result.data.data;
+    },
+    {
+      enabled: !!id && !!start && !!campaignId,
+    }
+  );
+}
+
+export function useGetDiscountQuestionsStats(data: {
+  campaignId: number | undefined;
+  id: number | undefined;
+  start?: string;
+}) {
+  const { id, campaignId } = data;
+  return useQuery(
+    ["discount-questions-stats", id, campaignId],
+    async () => {
+      const result = await axiosInstance.get<
+        APIResponse<{
+          questions: VoucherQuestion[];
+        }>
+      >(
+        `${config.API_ENDPOINT}/campaigns/${campaignId}/discount/${id}/stats-questions`
+      );
+      return result.data.data;
+    },
+    {
+      enabled: !!id && !!campaignId,
     }
   );
 }

@@ -15,7 +15,13 @@ import { ConfirmModal, HasNextPagination } from "@components";
 import { useGetListCampaigns, useUpdateCampaign } from "@hooks/campaigns";
 import { displayDateTime } from "@utils/date";
 import React from "react";
-import { FiDelete, FiEdit3, FiPlus } from "react-icons/fi";
+import {
+  FiBarChart,
+  FiBarChart2,
+  FiDelete,
+  FiEdit3,
+  FiPlus,
+} from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 import debounce from "lodash.debounce";
 export interface CampaignsProps {
@@ -99,6 +105,7 @@ export function Campaigns(props: CampaignsProps) {
           <Tr>
             <Th>ID</Th>
             <Th>Name</Th>
+            <Th>Status</Th>
             <Th>Claim type</Th>
             <Th>Start date</Th>
             <Th>End date</Th>
@@ -106,38 +113,62 @@ export function Campaigns(props: CampaignsProps) {
           </Tr>
         </Thead>
         <Tbody>
-          {campaigns.data?.data?.map((camp) => (
-            <Tr key={camp.id}>
-              <Td>{camp.id}</Td>
-              <Td>{camp.name}</Td>
-              <Td>{camp.claimType}</Td>
-              <Td>{displayDateTime(camp.startDate)}</Td>
-              <Td>{displayDateTime(camp.endDate)}</Td>
-              <Td>
-                <Box display="flex">
-                  <Box as={NavLink} to={`/campaigns/${camp.id}`}>
-                    <IconButton
-                      aria-label="Edit campaign"
-                      icon={<FiEdit3 />}
-                      variant="outline"
-                    />
-                  </Box>
-                  {new Date(camp.endDate).getTime() > new Date().getTime() && (
-                    <Box ml={4}>
+          {campaigns.data?.data?.map((camp) => {
+            let status =
+              camp.startDate < new Date().toISOString() ? "Ongoing" : "Waiting";
+
+            if (new Date(camp.endDate).getTime() < new Date().getTime()) {
+              status = "Expired";
+            }
+
+            return (
+              <Tr key={camp.id}>
+                <Td>{camp.id}</Td>
+                <Td>{camp.name}</Td>
+                <Td>{status}</Td>
+                <Td>{camp.claimType}</Td>
+                <Td>{displayDateTime(camp.startDate)}</Td>
+                <Td>{displayDateTime(camp.endDate)}</Td>
+                <Td>
+                  <Box display="flex">
+                    {camp.startDate < new Date().toISOString() && (
+                      <Box
+                        mr={4}
+                        as={NavLink}
+                        to={`/campaigns/${camp.id}/detail`}
+                      >
+                        <IconButton
+                          aria-label="Edit campaign"
+                          icon={<FiBarChart2 />}
+                          variant="outline"
+                        />
+                      </Box>
+                    )}
+                    <Box as={NavLink} to={`/campaigns/${camp.id}`}>
                       <IconButton
                         aria-label="Edit campaign"
-                        icon={<FiDelete />}
-                        colorScheme="red"
-                        onClick={() => {
-                          setIsConfirmModalOpen(camp.id);
-                        }}
+                        icon={<FiEdit3 />}
+                        variant="outline"
                       />
                     </Box>
-                  )}
-                </Box>
-              </Td>
-            </Tr>
-          ))}
+                    {new Date(camp.endDate).getTime() >
+                      new Date().getTime() && (
+                      <Box ml={4}>
+                        <IconButton
+                          aria-label="Edit campaign"
+                          icon={<FiDelete />}
+                          colorScheme="red"
+                          onClick={() => {
+                            setIsConfirmModalOpen(camp.id);
+                          }}
+                        />
+                      </Box>
+                    )}
+                  </Box>
+                </Td>
+              </Tr>
+            );
+          })}
         </Tbody>
       </Table>
       <HasNextPagination

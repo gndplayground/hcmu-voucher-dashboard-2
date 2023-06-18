@@ -33,6 +33,12 @@ const CampaignEditLazy = React.lazy(() =>
   }))
 );
 
+const CampaignDetailLazy = React.lazy(() =>
+  import("../pages/CampaignDetail").then((module) => ({
+    default: module.CampaignDetail,
+  }))
+);
+
 const CampanyProfileLazy = React.lazy(() =>
   import("../pages/CompanyProfile").then((module) => ({
     default: module.CompanyProfile,
@@ -67,6 +73,14 @@ export const router = createHashRouter([
             <GuardRoute>
               {({ companyId }) => <CampaignLazy companyId={companyId} />}
             </GuardRoute>
+          </SupportSuspense>
+        ),
+      },
+      {
+        path: "campaigns/:id/detail",
+        element: (
+          <SupportSuspense>
+            <GuardRoute>{() => <CampaignDetailLazy />}</GuardRoute>
           </SupportSuspense>
         ),
       },

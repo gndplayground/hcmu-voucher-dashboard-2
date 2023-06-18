@@ -11,6 +11,7 @@ export interface VoucherQuestionChoice {
   isCorrect?: boolean;
   isDeleted?: boolean;
   createdAt: Date;
+  count?: number;
 }
 
 export interface VoucherQuestionChoiceCreateData {
