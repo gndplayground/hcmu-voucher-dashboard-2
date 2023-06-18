@@ -15,13 +15,7 @@ import { ConfirmModal, HasNextPagination } from "@components";
 import { useGetListCampaigns, useUpdateCampaign } from "@hooks/campaigns";
 import { displayDateTime } from "@utils/date";
 import React from "react";
-import {
-  FiBarChart,
-  FiBarChart2,
-  FiDelete,
-  FiEdit3,
-  FiPlus,
-} from "react-icons/fi";
+import { FiBarChart2, FiDelete, FiEdit3, FiPlus } from "react-icons/fi";
 import { NavLink } from "react-router-dom";
 import debounce from "lodash.debounce";
 export interface CampaignsProps {

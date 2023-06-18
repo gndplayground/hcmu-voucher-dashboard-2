@@ -279,25 +279,25 @@ export function CampaignDetail() {
     }
   }, [rangeWeeks, selectedWeekDiscount, discountStats.data?.claimedByWeek]);
 
-  const questionsData = React.useMemo<
-    { chart: ChartData<"bar">; question: VoucherQuestion }[] | undefined
-  >(() => {
-    if (discountStats.data?.questions) {
-      return discountStats.data?.questions.map((q) => ({
-        question: q,
-        chart: {
-          labels: q.voucherQuestionChoices?.map((c) => c.choice) || [],
-          datasets: [
-            {
-              label: q.type,
-              data: q.voucherQuestionChoices?.map((c) => c.count || 0) || [],
-              backgroundColor: "rgba(255, 99, 132, 0.5)",
-            },
-          ],
-        },
-      }));
-    }
-  }, [discountStats.data?.questions]);
+  // const questionsData = React.useMemo<
+  //   { chart: ChartData<"bar">; question: VoucherQuestion }[] | undefined
+  // >(() => {
+  //   if (discountStats.data?.questions) {
+  //     return discountStats.data?.questions.map((q) => ({
+  //       question: q,
+  //       chart: {
+  //         labels: q.voucherQuestionChoices?.map((c) => c.choice) || [],
+  //         datasets: [
+  //           {
+  //             label: q.type,
+  //             data: q.voucherQuestionChoices?.map((c) => c.count || 0) || [],
+  //             backgroundColor: "rgba(255, 99, 132, 0.5)",
+  //           },
+  //         ],
+  //       },
+  //     }));
+  //   }
+  // }, [discountStats.data?.questions]);
 
   const questionAllStats = React.useMemo<
     { chart: ChartData<"bar">; question: VoucherQuestion }[] | undefined
